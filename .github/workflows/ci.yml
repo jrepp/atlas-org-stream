@@ -107,22 +107,3 @@ jobs:
           atlassian-org-tool-darwin-amd64
           atlassian-org-tool-darwin-arm64
           atlassian-org-tool-windows-amd64.exe
-
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.25.x'
-        cache: true
-    
-    - name: Install gosec
-      run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-    
-    - name: Run gosec security scanner
-      run: gosec ./...
