@@ -65,10 +65,11 @@ type Statistics struct {
 
 // JSONSchema represents the JSON schema for the NDJSON output
 type JSONSchema struct {
-	Schema      string                 `json:"$schema"`
-	Title       string                 `json:"title"`
-	Description string                 `json:"description"`
-	Type        string                 `json:"type"`
-	Properties  map[string]interface{} `json:"properties"`
-	Required    []string               `json:"required"`
+	Schema               string                 `json:"$schema"`
+	Title                string                 `json:"title"`
+	Description          string                 `json:"description"`
+	Type                 string                 `json:"type"`
+	Properties           map[string]interface{} `json:"properties"`
+	Required             []string               `json:"required"`
+	AdditionalProperties bool                   `json:"additionalProperties"`
 }
