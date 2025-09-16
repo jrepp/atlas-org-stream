@@ -52,6 +52,11 @@ func (t *Tracker) IncrementTeams() {
 	t.stats.TeamsFound++
 }
 
+// IncrementTeamsBy increments the teams found counter by the given amount
+func (t *Tracker) IncrementTeamsBy(count int) {
+	t.stats.TeamsFound += count
+}
+
 // IncrementTeamsProcessed increments the teams processed counter
 func (t *Tracker) IncrementTeamsProcessed() {
 	t.stats.TeamsProcessed++

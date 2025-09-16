@@ -42,6 +42,13 @@ func TestTrackerIncrements(t *testing.T) {
 		t.Errorf("Expected TeamsFound to be 2, got %d", stats.TeamsFound)
 	}
 
+	// Test teams increment by count
+	tracker.IncrementTeamsBy(3)
+	stats = tracker.GetStats()
+	if stats.TeamsFound != 5 {
+		t.Errorf("Expected TeamsFound to be 5 after IncrementTeamsBy(3), got %d", stats.TeamsFound)
+	}
+
 	// Test teams processed increment
 	tracker.IncrementTeamsProcessed()
 	stats = tracker.GetStats()
