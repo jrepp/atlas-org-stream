@@ -200,7 +200,7 @@ func (c *AtlassianClient) GetTeams(tracker *stats.Tracker) ([]types.Team, error)
 		}
 
 		allTeams = append(allTeams, teamsResp.Data...)
-		tracker.IncrementTeams() // Add the number of teams found in this page
+		tracker.IncrementTeamsBy(len(teamsResp.Data)) // Add the number of teams found in this page
 
 		// Check if we've got all teams
 		if len(allTeams) >= teamsResp.Meta.Total || len(teamsResp.Data) == 0 {
