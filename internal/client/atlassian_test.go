@@ -17,21 +17,21 @@ func TestNewAtlassianClient(t *testing.T) {
 		APIToken:     "test-api-token",
 		OrgID:        "test-org-id",
 	}
-	
+
 	client := NewAtlassianClient(config)
-	
+
 	if client == nil {
 		t.Fatal("NewAtlassianClient returned nil")
 	}
-	
+
 	if client.config.AdminBaseURL != config.AdminBaseURL {
 		t.Errorf("Expected AdminBaseURL %s, got %s", config.AdminBaseURL, client.config.AdminBaseURL)
 	}
-	
+
 	if client.config.AccessToken != config.AccessToken {
 		t.Errorf("Expected AccessToken %s, got %s", config.AccessToken, client.config.AccessToken)
 	}
-	
+
 	if client.httpClient == nil {
 		t.Error("HTTP client should not be nil")
 	}
@@ -48,19 +48,19 @@ func TestMakeRequestAuthentication(t *testing.T) {
 		w.Write([]byte(`{"success": true}`))
 	}))
 	defer server.Close()
-	
+
 	config := types.Config{
 		AccessToken: "test-oauth-token",
 	}
-	
+
 	client := NewAtlassianClient(config)
 	tracker := stats.NewTracker()
-	
+
 	_, err := client.makeRequest("GET", server.URL, nil, true, tracker)
 	if err != nil {
 		t.Errorf("OAuth request failed: %v", err)
 	}
-	
+
 	// Test Basic Auth authentication
 	server2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
@@ -74,15 +74,15 @@ func TestMakeRequestAuthentication(t *testing.T) {
 		w.Write([]byte(`{"success": true}`))
 	}))
 	defer server2.Close()
-	
+
 	config2 := types.Config{
 		Username: "test-user",
 		APIToken: "test-token",
 	}
-	
+
 	client2 := NewAtlassianClient(config2)
 	tracker2 := stats.NewTracker()
-	
+
 	_, err = client2.makeRequest("GET", server2.URL, nil, false, tracker2)
 	if err != nil {
 		t.Errorf("Basic auth request failed: %v", err)
@@ -102,23 +102,23 @@ func TestMakeRequestRetryLogic(t *testing.T) {
 		w.Write([]byte(`{"success": true}`))
 	}))
 	defer server.Close()
-	
+
 	config := types.Config{
 		AccessToken: "test-token",
 	}
-	
+
 	client := NewAtlassianClient(config)
 	tracker := stats.NewTracker()
-	
+
 	_, err := client.makeRequest("GET", server.URL, nil, true, tracker)
 	if err != nil {
 		t.Errorf("Request with retries failed: %v", err)
 	}
-	
+
 	if attempts != 3 {
 		t.Errorf("Expected 3 attempts, got %d", attempts)
 	}
-	
+
 	// Check that stats were updated correctly
 	stats := tracker.GetStats()
 	if stats.APICallsTotal != 3 {
@@ -138,19 +138,19 @@ func TestMakeRequestClientErrors(t *testing.T) {
 		w.Write([]byte(`{"error": "unauthorized"}`))
 	}))
 	defer server.Close()
-	
+
 	config := types.Config{
 		AccessToken: "invalid-token",
 	}
-	
+
 	client := NewAtlassianClient(config)
 	tracker := stats.NewTracker()
-	
+
 	_, err := client.makeRequest("GET", server.URL, nil, true, tracker)
 	if err == nil {
 		t.Error("Expected error for 401 response")
 	}
-	
+
 	// Should not retry on 4xx errors
 	stats := tracker.GetStats()
 	if stats.APICallsTotal != 1 {
@@ -168,40 +168,40 @@ func TestGetOrganization(t *testing.T) {
 		"displayName": "Test Org Display",
 		"type": "organization"
 	}`
-	
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the URL path
 		expectedPath := "/admin/v1/orgs/test-org-id"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
 		}
-		
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(expectedOrg))
 	}))
 	defer server.Close()
-	
+
 	config := types.Config{
 		AdminBaseURL: server.URL,
 		AccessToken:  "test-token",
 		OrgID:        "test-org-id",
 	}
-	
+
 	client := NewAtlassianClient(config)
 	tracker := stats.NewTracker()
-	
+
 	org, err := client.GetOrganization(tracker)
 	if err != nil {
 		t.Fatalf("GetOrganization failed: %v", err)
 	}
-	
+
 	if org.ID != "test-org-id" {
 		t.Errorf("Expected org ID 'test-org-id', got '%s'", org.ID)
 	}
 	if org.Name != "Test Organization" {
 		t.Errorf("Expected org name 'Test Organization', got '%s'", org.Name)
 	}
-	
+
 	// Check that stats were updated
 	stats := tracker.GetStats()
 	if stats.OrganizationsFound != 1 {

@@ -46,6 +46,14 @@ jobs:
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -v ./...
     
+    - name: Check code formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not properly formatted. Please run 'gofmt -s -w .'"
+          gofmt -s -l .
+          exit 1
+        fi
+    
     - name: Run go vet
       run: go vet ./...
     
@@ -54,6 +62,12 @@ jobs:
     
     - name: Run staticcheck
       run: staticcheck ./...
+    
+    - name: Install golangci-lint
+      run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    
+    - name: Run golangci-lint
+      run: golangci-lint run --timeout=5m
     
     - name: Upload test coverage
       uses: actions/upload-artifact@v4

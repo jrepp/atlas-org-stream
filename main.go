@@ -108,7 +108,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Teams found: %d\n", finalStats.TeamsFound)
 		fmt.Fprintf(os.Stderr, "Teams processed: %d\n", finalStats.TeamsProcessed)
 		fmt.Fprintf(os.Stderr, "Members found: %d\n", finalStats.MembersFound)
-		fmt.Fprintf(os.Stderr, "API calls made: %d (succeeded: %d, failed: %d)\n", 
+		fmt.Fprintf(os.Stderr, "API calls made: %d (succeeded: %d, failed: %d)\n",
 			finalStats.APICallsTotal, finalStats.APICallsSucceeded, finalStats.APICallsFailed)
 		fmt.Fprintf(os.Stderr, "Retry attempts: %d\n", finalStats.RetryAttempts)
 		fmt.Fprintf(os.Stderr, "Total processing time: %s\n", finalStats.ProcessingTime)
