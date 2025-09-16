@@ -172,7 +172,7 @@ type TeamsResponse struct {
 // GetTeams retrieves all teams for the organization using teams API with pagination
 func (c *AtlassianClient) GetTeams(tracker *stats.Tracker) ([]types.Team, error) {
 	baseURL := fmt.Sprintf("https://api.atlassian.com/ex/teams/%s/teams", c.config.OrgID)
-	
+
 	var allTeams []types.Team
 	page := 1
 	limit := 50 // API default/max
@@ -183,7 +183,7 @@ func (c *AtlassianClient) GetTeams(tracker *stats.Tracker) ([]types.Team, error)
 		if err != nil {
 			return nil, fmt.Errorf("parsing base URL: %w", err)
 		}
-		
+
 		params := url.Values{}
 		params.Set("page", strconv.Itoa(page))
 		params.Set("limit", strconv.Itoa(limit))
@@ -237,7 +237,7 @@ type MembersResponse struct {
 // GetTeamMembers gets members for a specific team using the teams API with pagination
 func (c *AtlassianClient) GetTeamMembers(teamID string, tracker *stats.Tracker) ([]types.Member, error) {
 	baseURL := fmt.Sprintf("https://api.atlassian.com/ex/teams/%s/members", c.config.OrgID)
-	
+
 	var allMembers []types.Member
 	var cursor string
 
@@ -246,7 +246,7 @@ func (c *AtlassianClient) GetTeamMembers(teamID string, tracker *stats.Tracker) 
 		reqBody := MembersRequest{
 			TeamIds: []string{teamID},
 		}
-		
+
 		bodyData, err := json.Marshal(reqBody)
 		if err != nil {
 			return nil, fmt.Errorf("marshaling members request: %w", err)
