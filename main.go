@@ -19,7 +19,7 @@ import (
 func outputNDJSON(writer io.Writer, dataType string, data interface{}) error {
 	output := types.NDJSONOutput{
 		Type:      dataType,
-		Timestamp: time.Now().Format(time.RFC3339),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Data:      data,
 	}
 
