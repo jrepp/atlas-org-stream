@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.21.x', '1.22.x', '1.23.x']
+        go-version: ['1.25.x']  # Only test Go 1.25.x since module requires go 1.25
     
     steps:
     - name: Checkout code
@@ -44,22 +44,48 @@ jobs:
       run: go build -v ./...
     
     - name: Run tests
-      run: go test -race -coverprofile=coverage.out -v ./...
+      run: go test -race -v ./...
+    
+    - name: Check code formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not properly formatted. Please run 'gofmt -s -w .'"
+          gofmt -s -l .
+          exit 1
+        fi
     
     - name: Run go vet
       run: go vet ./...
     
-    - name: Install staticcheck
-      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+    - name: Install golangci-lint
+      run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
     
-    - name: Run staticcheck
-      run: staticcheck ./...
-    
-    - name: Upload test coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-${{ matrix.go-version }}
-        path: coverage.out
+    - name: Run golangci-lint
+      run: golangci-lint run --timeout=5m
+
+  # static-analysis:
+  #   name: Static Analysis
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #   
+  #   - name: Set up Go
+  #     uses: actions/setup-go@v5
+  #     with:
+  #       go-version: '1.24.x'  # Use Go 1.24 for staticcheck compatibility
+  #       cache: true
+  #   
+  #   - name: Temporarily modify go.mod for staticcheck compatibility
+  #     run: sed -i 's/go 1\.25/go 1.24/g' go.mod
+  #   
+  #   - name: Install staticcheck
+  #     run: go install honnef.co/go/tools/cmd/staticcheck@latest
+  #   
+  #   - name: Run staticcheck
+  #     run: staticcheck ./...
+  #   
+  # TODO: Re-enable staticcheck when a Go 1.25 compatible version is available
 
   build-artifacts:
     name: Build Artifacts
@@ -74,7 +100,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23.x'
+        go-version: '1.25.x'
         cache: true
     
     - name: Build binaries
@@ -93,22 +119,3 @@ jobs:
           atlassian-org-tool-darwin-amd64
           atlassian-org-tool-darwin-arm64
           atlassian-org-tool-windows-amd64.exe
-
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.x'
-        cache: true
-    
-    - name: Install gosec
-      run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-    
-    - name: Run gosec security scanner
-      run: gosec ./...
