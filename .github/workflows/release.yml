@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23.x'
+        cache: true
+    
+    - name: Run tests
+      run: go test -v ./...
+    
+    - name: Build release binaries
+      run: |
+        # Create release directory
+        mkdir -p dist
+        
+        # Build for multiple platforms
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/atlassian-org-tool-linux-amd64 .
+        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/atlassian-org-tool-linux-arm64 .
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/atlassian-org-tool-darwin-amd64 .
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/atlassian-org-tool-darwin-arm64 .
+        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o dist/atlassian-org-tool-windows-amd64.exe .
+        
+        # Create checksums
+        cd dist
+        sha256sum * > checksums.txt
+        cd ..
+    
+    - name: Generate changelog
+      run: |
+        # Simple changelog generation
+        echo "## Changes in ${{ github.ref_name }}" > CHANGELOG_TEMP.md
+        echo "" >> CHANGELOG_TEMP.md
+        git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> CHANGELOG_TEMP.md || echo "- Initial release" >> CHANGELOG_TEMP.md
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        body_path: CHANGELOG_TEMP.md
+        draft: false
+        prerelease: false
+    
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/atlassian-org-tool-linux-amd64
+        asset_name: atlassian-org-tool-linux-amd64
+        asset_content_type: application/octet-stream
+    
+    - name: Upload all release assets
+      run: |
+        for file in dist/*; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            gh release upload ${{ github.ref_name }} "$file" --clobber
+          fi
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
