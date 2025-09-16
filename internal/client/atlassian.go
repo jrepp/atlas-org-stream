@@ -34,10 +34,10 @@ func NewAtlassianClient(config types.Config) *AtlassianClient {
 
 // makeRequest performs an HTTP request with retry logic and proper authentication
 func (c *AtlassianClient) makeRequest(method, url string, bodyData []byte, useOAuth bool, tracker *stats.Tracker) ([]byte, error) {
-	tracker.IncrementAPICallsTotal()
 	var lastErr error
 	maxRetries := 5 // Increased retry budget
 	for attempt := 0; attempt < maxRetries; attempt++ {
+		tracker.IncrementAPICallsTotal()
 		if attempt > 0 {
 			tracker.IncrementRetryAttempts()
 			// Exponential backoff with jitter

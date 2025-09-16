@@ -36,8 +36,9 @@ func NewTracker() *Tracker {
 
 // UpdateStats updates the statistics and returns the current state
 func (t *Tracker) UpdateStats() types.Statistics {
-	t.stats.ProcessingTime = time.Since(t.startTime).String()
-	t.stats.LastUpdated = time.Now().Format(time.RFC3339)
+	now := time.Now()
+	t.stats.ProcessingTime = now.Sub(t.startTime).String()
+	t.stats.LastUpdated = now.Format(time.RFC3339)
 	return t.stats
 }
 

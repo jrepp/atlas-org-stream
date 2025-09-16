@@ -101,17 +101,17 @@ func TestTrackerStatusUpdate(t *testing.T) {
 func TestTrackerUpdateStats(t *testing.T) {
 	tracker := NewTracker()
 
-	// Wait a short time to ensure processing time is recorded
-	time.Sleep(10 * time.Millisecond)
+	// Wait enough time to ensure there's a measureable difference
+	time.Sleep(1 * time.Second)
 
 	// Update stats and check processing time
-	stats := tracker.UpdateStats()
-	if stats.ProcessingTime == "0s" {
+	updatedStats := tracker.UpdateStats()
+	if updatedStats.ProcessingTime == "0s" {
 		t.Error("Expected ProcessingTime to be non-zero after UpdateStats")
 	}
 
-	// Check that LastUpdated was set
-	if stats.LastUpdated == stats.StartTime {
+	// Check that LastUpdated is different from StartTime
+	if updatedStats.LastUpdated == updatedStats.StartTime {
 		t.Error("Expected LastUpdated to be different from StartTime after UpdateStats")
 	}
 }
