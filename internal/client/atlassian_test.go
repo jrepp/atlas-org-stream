@@ -45,7 +45,7 @@ func TestMakeRequestAuthentication(t *testing.T) {
 			t.Errorf("Expected OAuth Authorization header, got: %s", auth)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
+		_, _ = w.Write([]byte(`{"success": true}`))
 	}))
 	defer server.Close()
 
@@ -71,7 +71,7 @@ func TestMakeRequestAuthentication(t *testing.T) {
 			t.Errorf("Expected basic auth test-user:test-token, got %s:%s", username, password)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
+		_, _ = w.Write([]byte(`{"success": true}`))
 	}))
 	defer server2.Close()
 
@@ -95,11 +95,11 @@ func TestMakeRequestRetryLogic(t *testing.T) {
 		attempts++
 		if attempts < 3 {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "server error"}`))
+			_, _ = w.Write([]byte(`{"error": "server error"}`))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
+		_, _ = w.Write([]byte(`{"success": true}`))
 	}))
 	defer server.Close()
 
@@ -135,7 +135,7 @@ func TestMakeRequestRetryLogic(t *testing.T) {
 func TestMakeRequestClientErrors(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`{"error": "unauthorized"}`))
+		_, _ = w.Write([]byte(`{"error": "unauthorized"}`))
 	}))
 	defer server.Close()
 
@@ -177,7 +177,7 @@ func TestGetOrganization(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(expectedOrg))
+		_, _ = w.Write([]byte(expectedOrg))
 	}))
 	defer server.Close()
 
